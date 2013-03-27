@@ -37,6 +37,10 @@ module ActiveRecord
         super(name, self.class.extract_value_from_default(default), sql_type, null)
       end
 
+      def ==(other)
+        name == other.name && default == other.default && sql_type == other.sql_type && null == other.null
+      end
+
       # :stopdoc:
       class << self
         attr_accessor :money_precision
@@ -766,8 +770,8 @@ module ActiveRecord
 
       # Returns the list of all tables in the schema search path or a specified schema.
       def tables(name = nil)
-        query(<<-SQL, 'SCHEMA').map { |row| row[0] }
-          SELECT tablename
+        query(<<-SQL, 'SCHEMA').map { |row| "#{row[0]}.#{row[1]}" }
+          SELECT schemaname, tablename
           FROM pg_tables
           WHERE schemaname = ANY (current_schemas(false))
         SQL

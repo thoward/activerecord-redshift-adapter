@@ -1,0 +1,10 @@
+# CREATE USER test_user WITH PASSWORD 'test_password';
+# CREATE SCHEMA test AUTHORIZATION test_user;
+host: CLUSTERNAME.IDENTIFIER.REGION.redshift.amazonaws.com
+port: 5432
+username: test_user
+password: test_password
+database: dev
+# ssl: true
+# search_path:
+# role:
