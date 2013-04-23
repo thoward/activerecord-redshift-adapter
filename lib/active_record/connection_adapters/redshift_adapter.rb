@@ -808,41 +808,7 @@ module ActiveRecord
 
       # Returns an array of indexes for the given table.
       def indexes(table_name, name = nil)
-         result = query(<<-SQL, 'SCHEMA')
-           SELECT distinct i.relname, d.indisunique, d.indkey, pg_get_indexdef(d.indexrelid), t.oid
-           FROM pg_class t
-           INNER JOIN pg_index d ON t.oid = d.indrelid
-           INNER JOIN pg_class i ON d.indexrelid = i.oid
-           WHERE i.relkind = 'i'
-             AND d.indisprimary = 'f'
-             AND t.relname = '#{table_name}'
-             AND i.relnamespace IN (SELECT oid FROM pg_namespace WHERE nspname = ANY (current_schemas(false)) )
-          ORDER BY i.relname
-        SQL
-
-
-        result.map do |row|
-          index_name = row[0]
-          unique = row[1] == 't'
-          indkey = row[2].split(" ")
-          inddef = row[3]
-          oid = row[4]
-
-          columns = Hash[query(<<-SQL, "SCHEMA")]
-          SELECT a.attnum, a.attname
-          FROM pg_attribute a
-          WHERE a.attrelid = #{oid}
-          AND a.attnum IN (#{indkey.join(",")})
-          SQL
-
-          column_names = columns.values_at(*indkey).compact
-
-          # add info on sort order for columns (only desc order is explicitly specified, asc is the default)
-          desc_order_columns = inddef.scan(/(\w+) DESC/).flatten
-          orders = desc_order_columns.any? ? Hash[desc_order_columns.map {|order_column| [order_column, :desc]}] : {}
-
-          column_names.empty? ? nil : IndexDefinition.new(table_name, index_name, unique, column_names, [], orders)
-        end.compact
+        []
       end
 
       # Returns the list of all column definitions for a table.
@@ -1040,12 +1006,14 @@ module ActiveRecord
         execute "ALTER TABLE #{quote_table_name(table_name)} RENAME COLUMN #{quote_column_name(column_name)} TO #{quote_column_name(new_column_name)}"
       end
 
+      def add_index(*)
+        # XXX nothing to do
+      end
+
       def remove_index!(table_name, index_name) #:nodoc:
-        execute "DROP INDEX #{quote_table_name(index_name)}"
       end
 
       def rename_index(table_name, old_name, new_name)
-        execute "ALTER INDEX #{quote_column_name(old_name)} RENAME TO #{quote_table_name(new_name)}"
       end
 
       def index_name_length
