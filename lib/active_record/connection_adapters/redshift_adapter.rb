@@ -32,13 +32,34 @@ module ActiveRecord
   module ConnectionAdapters
     # Redshift-specific extensions to column definitions in a table.
     class RedshiftColumn < Column #:nodoc:
+      attr_accessor :timezone
       # Instantiates a new Redshift column definition in a table.
-      def initialize(name, default, sql_type = nil, null = true)
+      def initialize(name, default, sql_type = nil, null = true, timezone = nil)
+        self.timezone = timezone
         super(name, self.class.extract_value_from_default(default), sql_type, null)
       end
 
       def ==(other)
         name == other.name && default == other.default && sql_type == other.sql_type && null == other.null
+      end
+
+      def type_cast(value)
+        return nil if value.nil?
+        return coder.load(value) if encoded?
+
+        if timezone && [:datetime, :timestamp].include?(type)
+          self.class.string_to_time_with_timezone(string, timezone)
+        else
+          super
+        end
+      end
+
+      def type_cast_code(var_name)
+        if timezone && [:datetime, :timestamp].include?(type)
+          "#{self.class.name}.string_to_time_with_timezone(#{var_name},'#{timezone}')"
+        else
+          super
+        end
       end
 
       # :stopdoc:
@@ -52,6 +73,14 @@ module ActiveRecord
           when '-infinity' then -1.0 / 0.0
           else
             super
+          end
+        end
+
+        def string_to_time_with_timezone(string, timezone)
+          if string =~ self::Format::ISO_DATETIME
+            Time.parse("#{string} #{timezone}")
+          else
+            string_to_time(string)
           end
         end
       end
@@ -815,7 +844,7 @@ module ActiveRecord
       def columns(table_name, name = nil)
         # Limit, precision, and scale are all handled by the superclass.
         column_definitions(table_name).collect do |column_name, type, default, notnull|
-          RedshiftColumn.new(column_name, default, type, notnull == 'f')
+          RedshiftColumn.new(column_name, default, type, notnull == 'f', @config[:read_timezone])
         end
       end
 
