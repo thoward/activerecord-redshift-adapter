@@ -1,5 +1,4 @@
-activerecord-redshift-adapter
-=============================
+# activerecord-redshift-adapter
 
 adapter for aws redshift for rails 3
 
@@ -9,9 +8,8 @@ barely tested (I'm working on a project that needs this -- this works as much as
 
 good luck
 
-example database.yml
-====================
-
+## example database.yml
+```yml
 common: &common
   adapter: postgresql
   username: postgres
@@ -32,3 +30,20 @@ redshift_development:
   <<: *common
   <<: *redshiftdb
   database: databasename
+```
+
+## options
+<table>
+  <tr>
+    <th>option</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <th>schema_search_path</th>
+    <td>set schema_search_path. use default value if not given.</td>
+  </tr>
+  <tr>
+    <th>read_timezone</th>
+    <td>force timezone for datetime when select values. ActiveRecord default timezone will set if not given.</td>
+  </tr>
+</table>
