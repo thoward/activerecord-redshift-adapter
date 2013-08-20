@@ -413,7 +413,7 @@ module ActiveRecord
       end
 
       def supports_insert_with_returning?
-        true
+        false
       end
 
       def supports_ddl_transactions?
@@ -609,9 +609,12 @@ module ActiveRecord
           table_ref = extract_table_ref_from_insert_sql(sql)
           pk = primary_key(table_ref) if table_ref
         end
-
-        if pk
+        
+        if pk && use_insert_returning?
           select_value("#{sql} RETURNING #{quote_column_name(pk)}")
+        elsif pk
+          super
+          last_insert_id_value(sequence_name || default_sequence_name(table_ref, pk))
         else
           super
         end
@@ -709,7 +712,7 @@ module ActiveRecord
           pk = primary_key(table_ref) if table_ref
         end
 
-        sql = "#{sql} RETURNING #{quote_column_name(pk)}" if pk
+        sql = "#{sql} RETURNING #{quote_column_name(pk)}" if pk && use_insert_returning?
 
         [sql, binds]
       end
