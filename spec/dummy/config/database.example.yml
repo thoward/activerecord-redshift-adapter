@@ -5,6 +5,8 @@ port: 5432
 username: test_user
 password: test_password
 database: dev
+#As RedShift does not support RETURNING keyword yet
+use_insert_returning: false
 # ssl: true
 # search_path:
 # role:
