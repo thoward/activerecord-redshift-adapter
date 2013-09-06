@@ -538,7 +538,7 @@ module ActiveRecord
       # REFERENTIAL INTEGRITY ====================================
 
       def supports_disable_referential_integrity? #:nodoc:
-        true
+        false
       end
 
       def disable_referential_integrity #:nodoc:
