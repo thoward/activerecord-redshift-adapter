@@ -753,6 +753,10 @@ module ActiveRecord
         execute("RELEASE SAVEPOINT #{current_savepoint_name}")
       end
 
+      def use_insert_returning?
+        @use_insert_returning
+      end
+
       # SCHEMA STATEMENTS ========================================
 
       # Drops the database specified on the +name+ attribute
