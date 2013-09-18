@@ -2,11 +2,7 @@
 
 adapter for aws redshift for rails 3
 
-ripped from rails 3 postgresql -- deleted code until it worked
-
-barely tested (I'm working on a project that needs this -- this works as much as I need to get the project moving)
-
-good luck
+Ripped from rails 3 postgresql.
 
 ## example database.yml
 ```yml
@@ -49,6 +45,10 @@ redshift_development:
   </tr>
 </table>
 ```
+
+## Have you considered using Partitioned gem?  It works with redshift!
+
+https://github.com/fiksu/partitioned
 
 ## TableManager
 
