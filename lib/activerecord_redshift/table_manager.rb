@@ -100,10 +100,12 @@ module ActiverecordRedshift
       end
       attnums = attnums.flatten.uniq
 
-      sql = "select attname,attnum from pg_attribute where attrelid = #{table_oid} and attnum in (#{attnums.join(',')})"
       column_names = {}
-      @connection.execute(sql).each do |row|
-        column_names[row['attnum']] = row['attname']
+      if attnums.length > 0
+        sql = "select attname,attnum from pg_attribute where attrelid = #{table_oid} and attnum in (#{attnums.join(',')})"
+        @connection.execute(sql).each do |row|
+          column_names[row['attnum']] = row['attname']
+        end
       end
       
       with_search_path([schema_name]) do
