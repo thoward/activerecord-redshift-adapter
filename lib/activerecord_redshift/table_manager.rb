@@ -107,6 +107,12 @@ module ActiverecordRedshift
           column_names[row['attnum']] = row['attname']
         end
       end
+
+      column_defaults = {}
+      sql = "select a.attname,d.adsrc from pg_attribute as a,pg_attrdef as d where a.attrelid = d.adrelid and d.adnum = a.attnum and a.attrelid = #{table_oid}"
+      @connection.execute(sql).each do |row|
+        column_defaults[row['attname']] = row['adsrc']
+      end
       
       with_search_path([schema_name]) do
         # select * from pg_table_def where tablename = 'bids' and schemaname = 'public';
@@ -137,6 +143,10 @@ module ActiverecordRedshift
           if row['sortkey'] != "0"
             sortkeys[row['sortkey'].to_i - 1] = column_name
           end
+          unless column_defaults[column_name].blank?
+            column_info << "default #{column_defaults[column_name]}"
+          end
+
           sql_columns << column_info.join(" ")
         end
 
